@@ -1,0 +1,5 @@
+/* CSS nền dùng chung cho mọi trang (trước đây lặp lại trong từng file HTML) */
+@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}
+/* --- Bổ sung nhỏ khi nối backend (không đổi phong cách gốc) --- */
+html { scroll-behavior: smooth; }
+button:disabled { cursor: not-allowed; opacity: .75; }
