@@ -148,7 +148,7 @@
       <input required name="fullName" placeholder="Họ tên học sinh" class="h-12 px-3 rounded-xl bg-surface-container-low focus:outline-none focus:ring-2 focus:ring-primary"/>
       <input required name="username" placeholder="Tên đăng nhập (VD: hocsinh08)" class="h-12 px-3 rounded-xl bg-surface-container-low focus:outline-none focus:ring-2 focus:ring-primary"/>
       <input required name="password" placeholder="Mật khẩu (≥4 ký tự)" class="h-12 px-3 rounded-xl bg-surface-container-low focus:outline-none focus:ring-2 focus:ring-primary"/>
-      <input name="className" placeholder="Lớp (VD: 3A)" value="3A" class="h-12 px-3 rounded-xl bg-surface-container-low focus:outline-none focus:ring-2 focus:ring-primary"/>
+      <input name="className" placeholder="Lớp (VD: 3A2)" value="3A2" class="h-12 px-3 rounded-xl bg-surface-container-low focus:outline-none focus:ring-2 focus:ring-primary"/>
       <button class="h-12 rounded-xl bg-primary text-on-primary font-headline-sm shadow-[0_3px_0_0_#005320] active:translate-y-0.5 transition-all">Tạo tài khoản</button>
     </form><p id="create-student-msg" class="mt-2 font-label-md text-label-md"></p>`;
   tbody.closest('table')?.parentElement?.prepend(panel);
