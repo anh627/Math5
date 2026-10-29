@@ -4,23 +4,69 @@
 html { scroll-behavior: smooth; }
 button:disabled { cursor: not-allowed; opacity: .75; }
 
-/* --- Thanh điều hướng dọc (Sidebar Rail) chuẩn trang gốc --- */
+/* --- Thanh điều hướng dọc (Sidebar Rail) chuẩn trang gốc Vườn Toán 3 --- */
+#app-sidebar {
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  z-index: 50 !important;
+  width: 72px !important;
+  background-color: #ffffff !important;
+  border-right: 1px solid #e1e3e1 !important;
+  box-shadow: 2px 0 16px rgba(0, 97, 39, 0.06) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 16px 8px !important;
+  box-sizing: border-box !important;
+}
+
+#app-mobile-nav {
+  position: fixed !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  height: 60px !important;
+  z-index: 50 !important;
+  background-color: #ffffff !important;
+  border-top: 1px solid #e1e3e1 !important;
+  display: none !important;
+  align-items: center !important;
+  justify-content: space-around !important;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05) !important;
+}
+
 @media (min-width: 768px) {
+  #app-sidebar {
+    display: flex !important;
+  }
+  #app-mobile-nav {
+    display: none !important;
+  }
   body.has-sidebar main {
-    padding-left: 4.75rem !important;
+    padding-left: 72px !important;
     padding-top: 1rem !important;
   }
   body.has-sidebar footer {
-    padding-left: 4.75rem !important;
+    padding-left: 72px !important;
   }
-  /* Mọi trang có Sidebar dọc đều ẩn header ngang cũ trên Desktop (tránh 2 thanh điều hướng
-     chồng lên nhau — trước đây chỉ ẩn ở index.html, các trang khác vẫn lộ header cũ) */
+  /* Ẩn header ngang trên Desktop khi đã có Sidebar dọc chuẩn gốc */
   body.has-sidebar > header {
     display: none !important;
   }
 }
+
 @media (max-width: 767px) {
+  #app-sidebar {
+    display: none !important;
+  }
+  #app-mobile-nav {
+    display: flex !important;
+  }
   body.has-sidebar main {
-    padding-bottom: 4.75rem !important;
+    padding-bottom: 68px !important;
   }
 }
+
