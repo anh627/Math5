@@ -8,6 +8,7 @@ RUN npm ci --omit=dev
 COPY server ./server
 COPY public ./public
 COPY data/seed.json ./data/seed.json
+COPY data/curriculum.json ./data/curriculum.json
 ENV NODE_ENV=production
 # DB nằm ở /data — khi chạy hãy gắn volume vào đây để dữ liệu bền vững
 # (dùng Railway Volumes / `docker run -v` để mount, không dùng VOLUME ở đây vì
