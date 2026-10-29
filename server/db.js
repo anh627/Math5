@@ -154,4 +154,9 @@ function seedIfEmpty() {
 seedIfEmpty();
 seedQuestionSets();
 
+// Đảm bảo thông tin Cô Hoàng Hương (GV Chủ nhiệm 3A2) luôn được cập nhật chính xác
+try {
+  db.prepare("UPDATE users SET full_name = 'Cô Hoàng Hương (GV Chủ nhiệm 3A2)', class_name = '3A2' WHERE username = 'giaovien01'").run();
+} catch (e) {}
+
 module.exports = db;

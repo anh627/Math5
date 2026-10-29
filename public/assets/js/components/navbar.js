@@ -11,16 +11,36 @@ window.MathApp.components = window.MathApp.components || {};
 window.MathApp.components.Navbar = {
   updateUser(user) {
     if (!user) return;
+    const isTeacher = user.role === 'teacher';
+    const teacherName = 'Cô Hoàng Hương (GV Chủ nhiệm 3A2)';
+
     // Thay tên mẫu "Bảo Nam" bằng tên thật trong vùng header/footer
-    document.querySelectorAll('header span, header p').forEach((el) => {
-      if (el.textContent.trim() === 'Bảo Nam' || el.textContent.trim() === 'Nguyễn Bảo Nam') el.textContent = user.fullName;
+    document.querySelectorAll('header span, header p, footer span, footer p').forEach((el) => {
+      const text = el.textContent.trim();
+      if (text === 'Bảo Nam' || text === 'Nguyễn Bảo Nam') {
+        el.textContent = isTeacher ? teacherName : user.fullName;
+      }
+      if (isTeacher && (text.includes('Lớp 3A') || text.includes('Lớp 3A2'))) {
+        el.textContent = 'GV Chủ nhiệm 3A2';
+      }
     });
+
+    // Cập nhật avatar giáo viên trên Header nếu đang đăng nhập là giáo viên
+    if (isTeacher) {
+      document.querySelectorAll('header img').forEach((img) => {
+        if (img.alt && (img.alt.includes('Hồ sơ') || img.alt.includes('Profile') || img.alt.includes('học sinh'))) {
+          img.src = 'assets/img/teacher-hoang-huong.jpg';
+          img.alt = teacherName;
+        }
+      });
+    }
+
     const header = document.querySelector('header');
     if (!header || header.querySelector('#btn-logout')) return;
     const btn = document.createElement('button');
     btn.id = 'btn-logout';
     btn.type = 'button';
-    btn.title = `Đăng xuất (${user.fullName})`;
+    btn.title = `Đăng xuất (${isTeacher ? teacherName : user.fullName})`;
     btn.className = 'ml-1 w-10 h-10 shrink-0 rounded-full bg-surface-container hover:bg-error-container text-on-surface-variant hover:text-on-error-container flex items-center justify-center transition-all';
     btn.innerHTML = '<span class="material-symbols-outlined text-[20px]">logout</span>';
     btn.addEventListener('click', async () => {
