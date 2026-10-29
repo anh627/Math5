@@ -18,6 +18,7 @@
 
   document.addEventListener('DOMContentLoaded', async () => {
     fixNavigation();
+    if (window.MathApp.components.Sidebar) window.MathApp.components.Sidebar.init();
     if (window.MathApp.components.Footer) window.MathApp.components.Footer.init();
 
     const user = await window.MathAPI.me();
@@ -29,6 +30,7 @@
     if (requireRole && user.role !== requireRole) { location.href = 'index.html'; return; }
 
     window.MathApp.user = user;
+    if (window.MathApp.components.Sidebar) window.MathApp.components.Sidebar.updateUser(user);
     if (window.MathApp.components.Navbar) window.MathApp.components.Navbar.updateUser(user);
     document.dispatchEvent(new CustomEvent('mathapp:user-ready', { detail: user }));
   });

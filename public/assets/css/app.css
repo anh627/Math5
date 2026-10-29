@@ -3,3 +3,25 @@
 /* --- Bổ sung nhỏ khi nối backend (không đổi phong cách gốc) --- */
 html { scroll-behavior: smooth; }
 button:disabled { cursor: not-allowed; opacity: .75; }
+
+/* --- Thanh điều hướng dọc (Sidebar Rail) chuẩn trang gốc --- */
+@media (min-width: 768px) {
+  body.has-sidebar main {
+    padding-left: 4.75rem !important;
+  }
+  body.has-sidebar footer {
+    padding-left: 4.75rem !important;
+  }
+  /* Trên trang chủ index.html, ẩn header ngang trên Desktop để dùng Sidebar dọc y hệt trang gốc */
+  body.has-sidebar[data-page="index"] > header {
+    display: none !important;
+  }
+  body.has-sidebar[data-page="index"] main {
+    padding-top: 1rem !important;
+  }
+}
+@media (max-width: 767px) {
+  body.has-sidebar main {
+    padding-bottom: 4.75rem !important;
+  }
+}
