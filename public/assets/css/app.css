@@ -8,16 +8,15 @@ button:disabled { cursor: not-allowed; opacity: .75; }
 @media (min-width: 768px) {
   body.has-sidebar main {
     padding-left: 4.75rem !important;
+    padding-top: 1rem !important;
   }
   body.has-sidebar footer {
     padding-left: 4.75rem !important;
   }
-  /* Trên trang chủ index.html, ẩn header ngang trên Desktop để dùng Sidebar dọc y hệt trang gốc */
-  body.has-sidebar[data-page="index"] > header {
+  /* Mọi trang có Sidebar dọc đều ẩn header ngang cũ trên Desktop (tránh 2 thanh điều hướng
+     chồng lên nhau — trước đây chỉ ẩn ở index.html, các trang khác vẫn lộ header cũ) */
+  body.has-sidebar > header {
     display: none !important;
-  }
-  body.has-sidebar[data-page="index"] main {
-    padding-top: 1rem !important;
   }
 }
 @media (max-width: 767px) {
