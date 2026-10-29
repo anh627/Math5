@@ -219,12 +219,12 @@ router.get('/teacher/students', requireTeacher, (req, res) => {
 });
 
 /* ---------------- Admin: tạo tài khoản giáo viên (thao tác hiếm, không có UI) ---------------- */
-const ADMIN_SECRET = process.env.ADMIN_SECRET;
+const ADMIN_SECRET = String(process.env.ADMIN_SECRET || '').trim();
 if (!ADMIN_SECRET) {
   console.warn('[Admin] ADMIN_SECRET chưa được cấu hình; tạo tài khoản giáo viên qua API sẽ bị từ chối.');
 }
 function requireAdminSecret(req, res, next) {
-  const given = req.headers['x-admin-secret'] || '';
+  const given = String(req.headers['x-admin-secret'] || '').trim();
   if (!ADMIN_SECRET || given !== ADMIN_SECRET) {
     return res.status(403).json({ error: 'Không có quyền thực hiện thao tác này.' });
   }
