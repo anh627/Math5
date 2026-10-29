@@ -148,7 +148,7 @@
       <input required name="fullName" placeholder="Họ tên học sinh" class="h-12 px-3 rounded-xl bg-surface-container-low focus:outline-none focus:ring-2 focus:ring-primary"/>
       <input required name="username" placeholder="Tên đăng nhập (VD: hocsinh08)" class="h-12 px-3 rounded-xl bg-surface-container-low focus:outline-none focus:ring-2 focus:ring-primary"/>
       <input required name="password" placeholder="Mật khẩu (≥4 ký tự)" class="h-12 px-3 rounded-xl bg-surface-container-low focus:outline-none focus:ring-2 focus:ring-primary"/>
-      <input name="className" placeholder="Lớp (VD: 3A)" value="3A" class="h-12 px-3 rounded-xl bg-surface-container-low focus:outline-none focus:ring-2 focus:ring-primary"/>
+      <input name="className" placeholder="Lớp (VD: 3A2)" value="3A2" class="h-12 px-3 rounded-xl bg-surface-container-low focus:outline-none focus:ring-2 focus:ring-primary"/>
       <button class="h-12 rounded-xl bg-primary text-on-primary font-headline-sm shadow-[0_3px_0_0_#005320] active:translate-y-0.5 transition-all">Tạo tài khoản</button>
     </form><p id="create-student-msg" class="mt-2 font-label-md text-label-md"></p>`;
   tbody.closest('table')?.parentElement?.prepend(panel);
@@ -224,6 +224,18 @@
     </form>
     <p id="question-msg" class="mt-2 font-label-md text-label-md"></p>
     <div id="question-list" class="mt-3 space-y-2"></div>
+  </div>
+  <div class="p-5 rounded-3xl bg-surface-container-lowest shadow-sm">
+    <h3 class="font-headline-md text-headline-md text-primary flex items-center gap-2 mb-3"><span class="material-symbols-outlined">assignment_turned_in</span> Giao Bài Tập Cho Lớp</h3>
+    <form id="assignment-form" class="grid grid-cols-1 md:grid-cols-5 gap-3">
+      <select name="setId" id="assignment-set-select" class="${inputCls} md:col-span-2" required></select>
+      <select name="className" id="assignment-class-select" class="${inputCls}" required><option value="">Chọn lớp</option></select>
+      <input name="dueDate" type="date" class="${inputCls}"/>
+      <button class="${btnCls}">Giao bài</button>
+      <input name="note" placeholder="Ghi chú cho học sinh" class="${inputCls} md:col-span-4"/>
+    </form>
+    <p id="assignment-msg" class="mt-2 font-label-md text-label-md"></p>
+    <div id="assignment-list" class="mt-3 divide-y divide-surface-container-low"></div>
   </div>`;
   tbody.closest('table')?.parentElement?.prepend(wrap);
 
@@ -253,7 +265,23 @@
         <strong>${esc(s.title)}</strong> (${s.question_count} câu${s.lesson_number ? ` • Bài ${s.lesson_number}` : ''})
         <button class="${smallBtn}" data-del-set="${s.id}" title="Xóa bộ đề">✕</button></span>`).join('');
     $('question-set-select').innerHTML = questionSets.map(s => `<option value="${s.id}">${esc(s.title)}</option>`).join('');
+    $('assignment-set-select').innerHTML = setsCache.map(s => `<option value="${s.id}">${esc(s.title)}</option>`).join('');
     loadQuestions();
+  }
+  async function loadAssignClasses() {
+    const { students } = await window.MathAPI.get('/api/teacher/students');
+    const classes = [...new Set(students.map(s => s.class_name).filter(Boolean))].sort();
+    $('assignment-class-select').innerHTML = '<option value="">Chọn lớp</option>' + classes.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  }
+  async function loadAssignments() {
+    const { assignments } = await window.MathAPI.get('/api/teacher/assignments');
+    $('assignment-list').innerHTML = assignments.map(a => `
+      <div class="py-2.5 flex flex-wrap items-center gap-2">
+        <span class="font-headline-sm text-label-md text-primary flex-1 min-w-[180px]">${esc(a.set_title)}</span>
+        <span class="font-label-md text-label-sm">Lớp ${esc(a.class_name)}${a.due_date ? ` • Hạn ${esc(a.due_date)}` : ''}</span>
+        <span class="font-label-md text-label-sm">${a.done_students}/${a.total_students} đã làm</span>
+        <button class="${smallBtn}" data-del-assign="${a.id}">Hủy giao</button>
+      </div>`).join('');
   }
   async function loadQuestions() {
     const setId = $('question-set-select').value;
@@ -313,12 +341,24 @@
   });
   $('question-cancel').addEventListener('click', () => { editingQuestion = null; $('question-form').reset(); $('question-submit-btn').textContent = 'Thêm câu hỏi'; $('question-cancel').classList.add('hidden'); });
 
+  $('assignment-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = Object.fromEntries(new FormData(e.target).entries());
+    try {
+      await window.MathAPI.post('/api/teacher/assignments', fd);
+      $('assignment-msg').textContent = '✅ Đã giao bài cho lớp.';
+      e.target.reset();
+      loadAssignments();
+    } catch (err) { $('assignment-msg').textContent = `⚠️ ${err.message}`; }
+  });
+
   wrap.addEventListener('click', async (e) => {
     const editL = e.target.closest('[data-edit-lesson]');
     const delL = e.target.closest('[data-del-lesson]');
     const delS = e.target.closest('[data-del-set]');
     const editQ = e.target.closest('[data-edit-question]');
     const delQ = e.target.closest('[data-del-question]');
+    const delA = e.target.closest('[data-del-assign]');
     try {
       if (editL) {
         const l = lessonsCache.find(x => x.id === editL.dataset.editLesson);
@@ -341,6 +381,7 @@
         $('question-submit-btn').textContent = 'Lưu thay đổi'; $('question-cancel').classList.remove('hidden');
       }
       if (delQ && confirm('Xóa câu hỏi này?')) { await window.MathAPI.del(`/api/teacher/questions/${delQ.dataset.delQuestion}`); loadQuestions(); loadSets(); }
+      if (delA && confirm('Hủy giao bài tập này?')) { await window.MathAPI.del(`/api/teacher/assignments/${delA.dataset.delAssign}`); loadAssignments(); }
     } catch (err) { alert(err.message); }
   });
 
@@ -353,7 +394,7 @@
   });
 
   document.addEventListener('mathapp:user-ready', async () => {
-    try { await loadLessons(); await loadSets(); } catch (err) { console.warn('Không tải được dữ liệu quản trị:', err.message); }
+    try { await loadLessons(); await loadSets(); await loadAssignClasses(); await loadAssignments(); } catch (err) { console.warn('Không tải được dữ liệu quản trị:', err.message); }
   });
 })();
 

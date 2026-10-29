@@ -10,7 +10,8 @@ COPY public ./public
 COPY data/seed.json ./data/seed.json
 ENV NODE_ENV=production
 # DB nằm ở /data — khi chạy hãy gắn volume vào đây để dữ liệu bền vững
+# (dùng Railway Volumes / `docker run -v` để mount, không dùng VOLUME ở đây vì
+# Railway's builder từ chối Dockerfile có khai báo VOLUME)
 ENV DB_PATH=/data/vuon-toan.db
-VOLUME ["/data"]
 EXPOSE 3000
 CMD ["node", "server/index.js"]

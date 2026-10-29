@@ -47,6 +47,30 @@ function lessonsWithProgress(userId) {
 router.get('/lessons', requireAuth, (req, res) => res.json({ lessons: lessonsWithProgress(req.user.id) }));
 router.get('/me/progress', requireAuth, (req, res) => res.json({ lessons: lessonsWithProgress(req.user.id), totalStars: req.user.total_stars }));
 
+/* ---------------- Mục lục SGK (16 Chủ đề, 81 bài) ---------------- */
+const fs = require('fs');
+const path = require('path');
+let cachedCurriculum = null;
+function getCurriculumData() {
+  if (!cachedCurriculum) {
+    const raw = fs.readFileSync(path.join(__dirname, '..', 'data', 'curriculum.json'), 'utf8');
+    cachedCurriculum = JSON.parse(raw);
+  }
+  return cachedCurriculum;
+}
+
+router.get('/curriculum', (req, res) => {
+  const data = getCurriculumData();
+  let progressMap = {};
+  if (req.user && req.user.id) {
+    try {
+      const rows = db.prepare('SELECT * FROM progress WHERE user_id=?').all(req.user.id);
+      rows.forEach(r => { progressMap[r.lesson_id] = r; });
+    } catch (_) {}
+  }
+  res.json({ ...data, userProgress: progressMap });
+});
+
 /* ---------------- Câu hỏi (không kèm đáp án) ---------------- */
 router.get('/question-sets/:setId/questions', requireAuth, (req, res) => {
   const rows = db.prepare('SELECT id,type,prompt,options_json,points,category FROM questions WHERE set_id=? ORDER BY sort_order').all(req.params.setId);
@@ -123,6 +147,11 @@ router.post('/teacher/students', requireTeacher, (req, res) => {
   const info = db.prepare(`INSERT INTO users (username,password_hash,full_name,role,class_name,student_code)
     VALUES (?,?,?,'student',?,?)`).run(username.trim(), bcrypt.hashSync(String(password), 10), fullName.trim(), className, studentCode.trim());
   res.status(201).json({ student: { id: info.lastInsertRowid, username: username.trim(), fullName: fullName.trim(), className } });
+});
+
+router.delete('/teacher/students/:id', requireTeacher, (req, res) => {
+  db.prepare("UPDATE users SET is_active=0 WHERE id=? AND role='student'").run(req.params.id);
+  res.json({ ok: true });
 });
 
 router.post('/teacher/students/:id/reset-password', requireTeacher, (req, res) => {
@@ -248,6 +277,47 @@ router.put('/teacher/questions/:id', requireTeacher, (req, res) => {
 router.delete('/teacher/questions/:id', requireTeacher, (req, res) => {
   db.prepare('DELETE FROM questions WHERE id=?').run(req.params.id);
   res.json({ ok: true });
+});
+
+/* ---------------- Giáo viên: giao bài tập cho lớp ---------------- */
+router.get('/teacher/assignments', requireTeacher, (req, res) => {
+  const assignments = db.prepare(`SELECT a.id, a.set_id, s.title AS set_title, a.class_name, a.due_date, a.note, a.created_at,
+      (SELECT COUNT(*) FROM users u WHERE u.role='student' AND u.is_active=1 AND u.class_name=a.class_name) AS total_students,
+      (SELECT COUNT(DISTINCT u.id) FROM users u JOIN attempts at ON at.user_id=u.id AND at.ref_id=a.set_id
+        WHERE u.role='student' AND u.is_active=1 AND u.class_name=a.class_name) AS done_students
+    FROM assignments a JOIN question_sets s ON s.id=a.set_id ORDER BY a.created_at DESC`).all();
+  res.json({ assignments });
+});
+router.post('/teacher/assignments', requireTeacher, (req, res) => {
+  const { setId = '', className = '', dueDate = null, note = '' } = req.body || {};
+  if (!String(className).trim()) return res.status(400).json({ error: 'Cần chọn lớp để giao bài.' });
+  const set = db.prepare('SELECT id FROM question_sets WHERE id=?').get(String(setId).trim());
+  if (!set) return res.status(404).json({ error: 'Không tìm thấy bộ đề.' });
+  db.prepare(`INSERT INTO assignments (set_id,class_name,due_date,note,created_by) VALUES (?,?,?,?,?)
+      ON CONFLICT(set_id,class_name) DO UPDATE SET due_date=excluded.due_date, note=excluded.note, created_at=datetime('now','localtime')`)
+    .run(set.id, String(className).trim(), dueDate || null, String(note).trim(), req.user.id);
+  const assignment = db.prepare('SELECT id FROM assignments WHERE set_id=? AND class_name=?')
+    .get(set.id, String(className).trim());
+  res.status(201).json({ assignment: { id: assignment.id } });
+});
+router.delete('/teacher/assignments/:id', requireTeacher, (req, res) => {
+  db.prepare('DELETE FROM assignments WHERE id=?').run(req.params.id);
+  res.json({ ok: true });
+});
+router.get('/me/assignments', requireAuth, (req, res) => {
+  const rows = db.prepare(`SELECT a.set_id, s.title AS set_title, s.kind, s.lesson_id,
+      l.number AS lesson_number, l.title AS lesson_title, a.class_name, a.due_date, a.note,
+      EXISTS(SELECT 1 FROM attempts at WHERE at.user_id=? AND at.ref_id=a.set_id) AS done,
+      (SELECT MAX(score_percent) FROM attempts at WHERE at.user_id=? AND at.ref_id=a.set_id) AS best_score
+    FROM assignments a JOIN question_sets s ON s.id=a.set_id LEFT JOIN lessons l ON l.id=s.lesson_id
+    WHERE a.class_name=?
+    ORDER BY CASE WHEN a.due_date IS NULL THEN 1 ELSE 0 END, a.due_date ASC, a.created_at DESC`).all(req.user.id, req.user.id, req.user.class_name);
+  const assignments = rows.map(r => ({
+    setId: r.set_id, setTitle: r.set_title, kind: r.kind, lessonId: r.lesson_id,
+    lessonNumber: r.lesson_number, lessonTitle: r.lesson_title, className: r.class_name,
+    dueDate: r.due_date, note: r.note, done: Boolean(r.done), bestScore: r.best_score,
+  }));
+  res.json({ assignments });
 });
 
 /* ---------------- Giáo viên: xuất báo cáo CSV (mở được bằng Excel) ---------------- */
