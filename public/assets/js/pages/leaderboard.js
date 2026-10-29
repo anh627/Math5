@@ -145,7 +145,7 @@ function podiumPillar(rank, row) {
       ${meTag}
       ${crown}
       <div class="relative ${sizeClass} mb-3">
-        <img class="w-full h-full rounded-full object-cover ring-4 ring-surface-container-lowest shadow-lg" alt="${esc(row.full_name)}" src="assets/img/student-avatar.jpg"/>
+        <img class="w-full h-full rounded-full object-cover ring-4 ring-surface-container-lowest shadow-lg" alt="${esc(row.full_name)}" src="assets/img/ong-vang-hoang-mai.png"/>
         <div class="absolute -bottom-2 right-1/2 translate-x-1/2 w-8 h-8 rounded-full bg-surface-container-lowest flex items-center justify-center shadow-md">
           <span class="font-headline-sm text-label-sm">${medal}</span>
         </div>
@@ -195,7 +195,7 @@ function listRow(row) {
         <span class="w-8 h-8 rounded-full bg-surface-container-high font-headline-sm text-label-md flex items-center justify-center text-on-surface font-bold">${row.rank}</span>
       </div>
       <div class="flex items-center gap-3 col-span-3">
-        <img class="w-11 h-11 rounded-full object-cover ring-2 ring-primary-fixed shrink-0" alt="${esc(row.full_name)}" src="assets/img/student-avatar.jpg"/>
+        <img class="w-11 h-11 rounded-full object-cover ring-2 ring-primary-fixed shrink-0" alt="${esc(row.full_name)}" src="assets/img/ong-vang-hoang-mai.png"/>
         <div class="flex flex-col">
           <span class="font-headline-sm text-label-md text-on-surface font-bold">${esc(row.full_name)}${row.isMe ? ' <span class="text-primary">(con)</span>' : ''}</span>
           <span class="font-label-sm text-[12px] text-on-surface-variant">Lớp ${esc(row.class_name || '')}</span>

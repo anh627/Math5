@@ -47,6 +47,30 @@ function lessonsWithProgress(userId) {
 router.get('/lessons', requireAuth, (req, res) => res.json({ lessons: lessonsWithProgress(req.user.id) }));
 router.get('/me/progress', requireAuth, (req, res) => res.json({ lessons: lessonsWithProgress(req.user.id), totalStars: req.user.total_stars }));
 
+/* ---------------- Mục lục SGK (16 Chủ đề, 81 bài) ---------------- */
+const fs = require('fs');
+const path = require('path');
+let cachedCurriculum = null;
+function getCurriculumData() {
+  if (!cachedCurriculum) {
+    const raw = fs.readFileSync(path.join(__dirname, '..', 'data', 'curriculum.json'), 'utf8');
+    cachedCurriculum = JSON.parse(raw);
+  }
+  return cachedCurriculum;
+}
+
+router.get('/curriculum', (req, res) => {
+  const data = getCurriculumData();
+  let progressMap = {};
+  if (req.user && req.user.id) {
+    try {
+      const rows = db.prepare('SELECT * FROM progress WHERE user_id=?').all(req.user.id);
+      rows.forEach(r => { progressMap[r.lesson_id] = r; });
+    } catch (_) {}
+  }
+  res.json({ ...data, userProgress: progressMap });
+});
+
 /* ---------------- Câu hỏi (không kèm đáp án) ---------------- */
 router.get('/question-sets/:setId/questions', requireAuth, (req, res) => {
   const rows = db.prepare('SELECT id,type,prompt,options_json,points,category FROM questions WHERE set_id=? ORDER BY sort_order').all(req.params.setId);
@@ -123,6 +147,11 @@ router.post('/teacher/students', requireTeacher, (req, res) => {
   const info = db.prepare(`INSERT INTO users (username,password_hash,full_name,role,class_name,student_code)
     VALUES (?,?,?,'student',?,?)`).run(username.trim(), bcrypt.hashSync(String(password), 10), fullName.trim(), className, studentCode.trim());
   res.status(201).json({ student: { id: info.lastInsertRowid, username: username.trim(), fullName: fullName.trim(), className } });
+});
+
+router.delete('/teacher/students/:id', requireTeacher, (req, res) => {
+  db.prepare("UPDATE users SET is_active=0 WHERE id=? AND role='student'").run(req.params.id);
+  res.json({ ok: true });
 });
 
 router.post('/teacher/students/:id/reset-password', requireTeacher, (req, res) => {

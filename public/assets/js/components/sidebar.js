@@ -7,7 +7,7 @@ window.MathApp.components = window.MathApp.components || {};
 
 window.MathApp.routes = {
   home: 'index.html',
-  curriculum: 'index.html#lesson-9',
+  curriculum: 'muc-luc.html',
   exercise: 'exercise.html',
   exam: 'exam.html',
   games: 'game.html',
@@ -49,7 +49,7 @@ window.MathApp.components.Sidebar = {
 
   navLinks: [
     { id: 'index', label: 'Trang Chủ', href: 'index.html', icon: 'home' },
-    { id: 'curriculum', label: 'Mục Lục SGK', href: 'index.html#lesson-9', icon: 'menu_book' },
+    { id: 'curriculum', label: 'Mục Lục SGK', href: 'muc-luc.html', icon: 'menu_book' },
     { id: 'exercise', label: 'Phòng Luyện Tập', href: 'exercise.html', icon: 'edit_note' },
     { id: 'games', label: 'Đấu Trường Trò Chơi', href: 'game.html', icon: 'sports_esports' },
     { id: 'leaderboard', label: 'Bảng Xếp Hạng', href: 'leaderboard.html', icon: 'emoji_events' },
@@ -127,7 +127,7 @@ window.MathApp.components.Sidebar = {
 
         <!-- Avatar người dùng (Học sinh / Giáo viên) -->
         <div class="relative group cursor-pointer" title="${isTeacher ? 'Cô Hoàng Hương (GV Chủ nhiệm 3A2)' : (u.fullName || 'Hồ sơ người dùng')}">
-          <img alt="${isTeacher ? 'Cô Hoàng Hương (GV Chủ nhiệm 3A2)' : 'Avatar'}" class="w-9 h-9 rounded-full object-cover ring-2 ring-primary/30 group-hover:ring-primary transition-all" src="${isTeacher ? 'assets/img/teacher-hoang-huong.jpg' : (u.avatar || 'assets/img/student-avatar.jpg')}" onerror="this.src='assets/img/student-avatar.jpg'"/>
+          <img alt="${isTeacher ? 'Cô Hoàng Hương (GV Chủ nhiệm 3A2)' : 'Avatar'}" class="w-9 h-9 rounded-full object-cover ring-2 ring-primary/30 group-hover:ring-primary transition-all" src="${isTeacher ? 'assets/img/teacher-hoang-huong.jpg' : (u.avatar || 'assets/img/ong-vang-hoang-mai.png')}" onerror="this.src='assets/img/ong-vang-hoang-mai.png'"/>
           <span class="hidden md:block absolute left-full ml-3 px-3 py-1.5 rounded-xl bg-inverse-surface text-inverse-on-surface font-headline-sm text-[12px] shadow-xl whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 group-hover:translate-x-1 transition-all z-50">
             ${isTeacher ? 'Cô Hoàng Hương (GV Chủ nhiệm 3A2)' : `${u.fullName || 'Bảo Nam'} • ${u.className || 'Lớp 3A2'}`}
           </span>
