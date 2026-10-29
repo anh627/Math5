@@ -239,6 +239,20 @@ router.get('/admin/users-lookup', requireAdminSecret, (req, res) => {
   res.json({ users: rows });
 });
 
+router.patch('/admin/teachers/:id', requireAdminSecret, (req, res) => {
+  const { className, fullName } = req.body || {};
+  const teacher = db.prepare("SELECT id FROM users WHERE id=? AND role='teacher'").get(req.params.id);
+  if (!teacher) return res.status(404).json({ error: 'Không tìm thấy giáo viên.' });
+  if (className && String(className).trim()) {
+    db.prepare('UPDATE users SET class_name=? WHERE id=?').run(String(className).trim(), req.params.id);
+  }
+  if (fullName && String(fullName).trim()) {
+    db.prepare('UPDATE users SET full_name=? WHERE id=?').run(String(fullName).trim(), req.params.id);
+  }
+  const updated = db.prepare('SELECT id,username,full_name,class_name,email FROM users WHERE id=?').get(req.params.id);
+  res.json({ teacher: updated });
+});
+
 router.post('/admin/teachers', requireAdminSecret, (req, res) => {
   const { username = '', password = '', fullName = '', className = '', email = '' } = req.body || {};
   if (!username.trim() || !fullName.trim() || !className.trim() || String(password).length < 4) {
