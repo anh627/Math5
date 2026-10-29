@@ -123,7 +123,7 @@ router.get('/leaderboard', requireAuth, (req, res) => {
   const rows = db.prepare(`SELECT u.id,u.full_name,u.class_name,u.total_stars,
       (SELECT COUNT(*) FROM attempts a WHERE a.user_id=u.id AND a.kind IN ('exercise','exam')) AS attempts_count,
       (SELECT ROUND(AVG(score_percent)) FROM attempts a WHERE a.user_id=u.id AND a.kind IN ('exercise','exam')) AS avg_score
-    FROM users u WHERE u.role='student' AND u.is_active=1 ORDER BY u.total_stars DESC, u.full_name`).all();
+    FROM users u WHERE u.role='student' AND u.is_active=1 AND u.class_name=? ORDER BY u.total_stars DESC, u.full_name`).all(req.user.class_name);
   res.json({ leaderboard: rows.map((r, i) => ({ rank: i + 1, ...r, isMe: r.id === req.user.id })) });
 });
 
@@ -132,7 +132,7 @@ router.get('/teacher/students', requireTeacher, (req, res) => {
   const rows = db.prepare(`SELECT u.id,u.username,u.full_name,u.class_name,u.student_code,u.total_stars,u.created_at,
       (SELECT ROUND(AVG(score_percent),1) FROM attempts a WHERE a.user_id=u.id AND a.kind IN ('exercise','exam')) AS avg_score,
       (SELECT COUNT(*) FROM attempts a WHERE a.user_id=u.id) AS attempts_count
-    FROM users u WHERE u.role='student' AND u.is_active=1 ORDER BY u.class_name, u.full_name`).all();
+    FROM users u WHERE u.role='student' AND u.is_active=1 AND u.class_name=? ORDER BY u.class_name, u.full_name`).all(req.user.class_name);
   res.json({ students: rows });
 });
 
@@ -150,20 +150,26 @@ router.post('/teacher/students', requireTeacher, (req, res) => {
 });
 
 router.delete('/teacher/students/:id', requireTeacher, (req, res) => {
-  db.prepare("UPDATE users SET is_active=0 WHERE id=? AND role='student'").run(req.params.id);
+  const student = db.prepare("SELECT id FROM users WHERE id=? AND role='student' AND class_name=?").get(req.params.id, req.user.class_name);
+  if (!student) return res.status(404).json({ error: 'Không tìm thấy học sinh trong lớp của bạn.' });
+  db.prepare("UPDATE users SET is_active=0 WHERE id=? AND role='student' AND class_name=?").run(req.params.id, req.user.class_name);
   res.json({ ok: true });
 });
 
 router.post('/teacher/students/:id/reset-password', requireTeacher, (req, res) => {
   const { password = '' } = req.body || {};
   if (String(password).length < 4) return res.status(400).json({ error: 'Mật khẩu mới cần từ 4 ký tự.' });
-  db.prepare("UPDATE users SET password_hash=? WHERE id=? AND role='student'").run(bcrypt.hashSync(String(password), 10), req.params.id);
+  const student = db.prepare("SELECT id FROM users WHERE id=? AND role='student' AND class_name=?").get(req.params.id, req.user.class_name);
+  if (!student) return res.status(404).json({ error: 'Không tìm thấy học sinh trong lớp của bạn.' });
+  db.prepare("UPDATE users SET password_hash=? WHERE id=? AND role='student' AND class_name=?").run(bcrypt.hashSync(String(password), 10), req.params.id, req.user.class_name);
   res.json({ ok: true });
 });
 
 router.get('/teacher/overview', requireTeacher, (req, res) => {
-  const students = db.prepare("SELECT COUNT(*) c FROM users WHERE role='student' AND is_active=1").get().c;
-  const attempts = db.prepare('SELECT COUNT(*) c, ROUND(AVG(score_percent),1) avg FROM attempts').get();
+  const students = db.prepare("SELECT COUNT(*) c FROM users WHERE role='student' AND is_active=1 AND class_name=?").get(req.user.class_name).c;
+  const attempts = db.prepare(`SELECT COUNT(*) c, ROUND(AVG(a.score_percent),1) avg
+    FROM attempts a JOIN users u ON u.id=a.user_id
+    WHERE u.role='student' AND u.is_active=1 AND u.class_name=?`).get(req.user.class_name);
   res.json({ students, attempts: attempts.c, avgScore: attempts.avg || 0 });
 });
 
@@ -301,7 +307,7 @@ router.post('/teacher/assignments', requireTeacher, (req, res) => {
   res.status(201).json({ assignment: { id: assignment.id } });
 });
 router.delete('/teacher/assignments/:id', requireTeacher, (req, res) => {
-  db.prepare('DELETE FROM assignments WHERE id=?').run(req.params.id);
+  db.prepare('DELETE FROM assignments WHERE id=? AND class_name=?').run(req.params.id, req.user.class_name);
   res.json({ ok: true });
 });
 router.get('/me/assignments', requireAuth, (req, res) => {
@@ -325,7 +331,7 @@ router.get('/teacher/export.csv', requireTeacher, (req, res) => {
   const rows = db.prepare(`SELECT u.username,u.full_name,u.class_name,u.student_code,u.total_stars,
       (SELECT ROUND(AVG(score_percent),1) FROM attempts a WHERE a.user_id=u.id AND a.kind IN ('exercise','exam')) AS avg_score,
       (SELECT COUNT(*) FROM attempts a WHERE a.user_id=u.id) AS attempts_count
-    FROM users u WHERE u.role='student' AND u.is_active=1 ORDER BY u.class_name,u.full_name`).all();
+    FROM users u WHERE u.role='student' AND u.is_active=1 AND u.class_name=? ORDER BY u.class_name,u.full_name`).all(req.user.class_name);
   const esc = v => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`;
   const csv = ['Tên đăng nhập,Họ tên,Lớp,Mã học sinh,Tổng sao,Điểm TB,Số lượt làm bài',
     ...rows.map(r => [r.username, r.full_name, r.class_name, r.student_code, r.total_stars, r.avg_score == null ? '' : r.avg_score, r.attempts_count].map(esc).join(','))].join('\n');
@@ -336,16 +342,18 @@ router.get('/teacher/export.csv', requireTeacher, (req, res) => {
 
 /* ---------------- ĐỢT 3: Thống kê lớp học từ dữ liệu thật ---------------- */
 router.get('/teacher/analytics', requireTeacher, (req, res) => {
-  const students = db.prepare("SELECT id FROM users WHERE role='student' AND is_active=1").all();
+  const students = db.prepare("SELECT id FROM users WHERE role='student' AND is_active=1 AND class_name=?").all(req.user.class_name);
   const studentIds = students.map(s => s.id);
   const lessons = db.prepare('SELECT * FROM lessons ORDER BY sort_order').all();
-  const prog = db.prepare('SELECT * FROM progress').all();
+  const prog = db.prepare(`SELECT p.* FROM progress p JOIN users u ON u.id=p.user_id
+    WHERE u.role='student' AND u.is_active=1 AND u.class_name=?`).all(req.user.class_name);
   const completedTotal = prog.filter(p => p.completed).length;
   const completionRate = studentIds.length && lessons.length
     ? Math.round(completedTotal / (studentIds.length * lessons.length) * 100) : 0;
   const studentsWithCompleted = new Set(prog.filter(p => p.completed).map(p => p.user_id)).size;
 
-  const attempts = db.prepare("SELECT * FROM attempts WHERE kind IN ('exercise','exam') ORDER BY created_at").all();
+  const attempts = db.prepare(`SELECT a.* FROM attempts a JOIN users u ON u.id=a.user_id
+    WHERE a.kind IN ('exercise','exam') AND u.role='student' AND u.is_active=1 AND u.class_name=? ORDER BY a.created_at`).all(req.user.class_name);
   const avgScore = attempts.length ? Math.round(attempts.reduce((s, a) => s + a.score_percent, 0) / attempts.length * 10) / 10 : 0;
 
   // Điểm TB từng học sinh -> xuất sắc / cần hỗ trợ
@@ -358,8 +366,11 @@ router.get('/teacher/analytics', requireTeacher, (req, res) => {
   });
 
   // Hoạt động 7 ngày gần nhất (số lượt làm bài mỗi ngày)
-  const last7 = db.prepare(`SELECT date(created_at) AS day, COUNT(*) AS c FROM attempts
-    WHERE created_at >= datetime('now','localtime','-6 days') GROUP BY day ORDER BY day`).all();
+  const last7 = db.prepare(`SELECT date(a.created_at) AS day, COUNT(*) AS c FROM attempts a
+    JOIN users u ON u.id=a.user_id
+    WHERE a.created_at >= datetime('now','localtime','-6 days')
+      AND u.role='student' AND u.is_active=1 AND u.class_name=?
+    GROUP BY day ORDER BY day`).all(req.user.class_name);
 
   // Dạng hay sai nhất: đối chiếu từng đáp án đã lưu với đáp án đúng trong DB
   const qmap = Object.fromEntries(db.prepare('SELECT id,category,type,prompt,correct_answer FROM questions').all().map(q => [q.id, q]));
