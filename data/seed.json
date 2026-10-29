@@ -18,60 +18,6 @@
       "className": "3A2",
       "studentCode": "HM-3A-08",
       "totalStars": 1250
-    },
-    {
-      "username": "hocsinh02",
-      "password": "123456",
-      "fullName": "Trần Bảo Trâm",
-      "role": "student",
-      "className": "3A",
-      "studentCode": "HM-3A-02",
-      "totalStars": 2850
-    },
-    {
-      "username": "hocsinh03",
-      "password": "123456",
-      "fullName": "Lê Gia Huy",
-      "role": "student",
-      "className": "3C",
-      "studentCode": "HM-3C-05",
-      "totalStars": 2490
-    },
-    {
-      "username": "hocsinh04",
-      "password": "123456",
-      "fullName": "Nguyễn Đức Minh",
-      "role": "student",
-      "className": "3A",
-      "studentCode": "HM-3A-11",
-      "totalStars": 320
-    },
-    {
-      "username": "hocsinh05",
-      "password": "123456",
-      "fullName": "Lê Quang Vinh",
-      "role": "student",
-      "className": "3A",
-      "studentCode": "HM-3A-17",
-      "totalStars": 410
-    },
-    {
-      "username": "hocsinh06",
-      "password": "123456",
-      "fullName": "Vũ Hoàng Ánh",
-      "role": "student",
-      "className": "3A",
-      "studentCode": "HM-3A-21",
-      "totalStars": 980
-    },
-    {
-      "username": "hocsinh07",
-      "password": "123456",
-      "fullName": "Đặng Thủy Tiên",
-      "role": "student",
-      "className": "3A",
-      "studentCode": "HM-3A-25",
-      "totalStars": 1100
     }
   ],
   "lessons": [

@@ -2,7 +2,7 @@
 **Tài liệu bàn giao kỹ thuật & hướng dẫn cho Codex / Developer**  
 *Thời gian lập:* 29/10/2026  
 *Dự án:* Math5 (Vườn Toán Lớp 3)  
-*Môi trường:* Local (`C:\Antigravity\Math5`), Remote GitHub (`fossbk-spec/Math5`), Hosting (`math5-production.up.railway.app`)  
+*Môi trường:* Local (`C:\Antigravity\Math5`), Remote GitHub (`fossbk-spec/Math5`), Hosting (`math3a2-production.up.railway.app`)  
 *Tham chiếu đối sánh:* [https://vuon-toan-3.onrender.com/index.html](https://vuon-toan-3.onrender.com/index.html)
 
 ---
@@ -167,7 +167,7 @@ anchor.insertAdjacentElement('beforebegin', card);
 ## LỖI 5: HIỆN TƯỢNG "GIAO DIỆN 1 HIỆN RA RỒI BIẾN MẤT, MÀN HÌNH TRẮNG TINH"
 
 ### 1. Triệu chứng (Symptoms)
-- Khi truy cập trang [https://math5-production.up.railway.app/leaderboard.html](https://math5-production.up.railway.app/leaderboard.html):
+- Khi truy cập trang [https://math3a2-production.up.railway.app/leaderboard.html](https://math3a2-production.up.railway.app/leaderboard.html):
   - **Giây đầu tiên (Giao diện 1):** Toàn bộ giao diện Bảng Xếp Hạng & Vinh Danh Dũng Sĩ Toán Học (Bục 3D Top 3: Trần Bảo Trâm, Nguyễn Bảo Nam, Lê Gia Huy và danh sách thi đua) hiện ra đầy đủ cùng Sidebar bên trái.
   - **Sau 1 giây (Giao diện 2):** Toàn bộ nội dung chính biến mất hoàn toàn, để lại một màn hình trắng tinh, thanh Footer bị kéo giật ngược lên tận đỉnh trang (như ảnh người dùng phản hồi).
 
@@ -258,13 +258,13 @@ document.addEventListener('mathapp:user-ready', async (e) => {
 
 ### 2. Hướng dẫn kiểm thử cho Codex / QA
 1. **Kiểm tra Trang Chủ (`index.html`):**
-   - Truy cập: `https://math5-production.up.railway.app/index.html`
+   - Truy cập: `https://math3a2-production.up.railway.app/index.html`
    - Xác nhận:
      - Bên trái có Sidebar dọc màu trắng, trên cùng có logo tròn Hoàng Mai, dưới cùng có sao và avatar.
      - Dòng lời dặn giáo viên ghi rõ: **"Lời dặn của Cô Hoàng Hương (GV Chủ nhiệm 3A2)"** kèm ảnh cô giáo.
      - Khối *"Bài được giao"* (nếu có bài) được căn giữa trong khung `max-w-7xl`, viền nổi 3D, có nút *"Vào làm bài"*, không bị tràn viền màn hình.
 2. **Kiểm tra Trang Bảng Xếp Hạng (`leaderboard.html`):**
-   - Truy cập: `https://math5-production.up.railway.app/leaderboard.html`
+   - Truy cập: `https://math3a2-production.up.railway.app/leaderboard.html`
    - Nhấn `Ctrl + F5` (xóa cache).
    - Xác nhận:
      - Giao diện bục vinh danh Top 3 (Trần Bảo Trâm, Nguyễn Bảo Nam, Lê Gia Huy) **hiển thị cố định và ổn định, KHÔNG bị biến mất sau 1 giây**.
