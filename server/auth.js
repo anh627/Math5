@@ -56,7 +56,7 @@ function attachUser(db) {
     const bearer = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
     const payload = verify(bearer) || verify(parseCookies(req)[COOKIE_NAME]);
     if (payload) {
-      req.user = db.prepare('SELECT id,username,full_name,role,class_name,student_code,total_stars FROM users WHERE id=? AND is_active=1').get(payload.uid) || null;
+      req.user = db.prepare('SELECT id,username,full_name,role,class_name,student_code,total_stars,email,avatar,google_id FROM users WHERE id=? AND is_active=1').get(payload.uid) || null;
     }
     next();
   };

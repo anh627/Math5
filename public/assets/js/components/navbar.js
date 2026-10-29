@@ -12,7 +12,7 @@ window.MathApp.components.Navbar = {
   updateUser(user) {
     if (!user) return;
     const isTeacher = user.role === 'teacher';
-    const teacherName = 'Cô Hoàng Hương (GV Chủ nhiệm 3A2)';
+    const teacherName = user.fullName || 'Cô Hoàng Hương (GV Chủ nhiệm 3A2)';
 
     // Thay tên mẫu "Bảo Nam" hoặc "Học sinh" bằng tên thật trong vùng header/footer
     document.querySelectorAll('header span, header p, footer span, footer p').forEach((el) => {
@@ -21,7 +21,7 @@ window.MathApp.components.Navbar = {
         el.textContent = isTeacher ? teacherName : (user.fullName || 'Học sinh Lớp 3A2');
       }
       if (isTeacher && (text.includes('Lớp 3A') || text.includes('Lớp 3A2'))) {
-        el.textContent = 'GV Chủ nhiệm 3A2';
+        el.textContent = user.className ? `GV ${user.className}` : 'GV Khối 3';
       } else if (!isTeacher && text === 'Lớp 3A') {
         el.textContent = user.className ? `Lớp ${user.className}` : 'Lớp 3A2';
       }
@@ -35,9 +35,10 @@ window.MathApp.components.Navbar = {
 
     // Cập nhật avatar giáo viên trên Header nếu đang đăng nhập là giáo viên
     if (isTeacher) {
+      const avatarUrl = user.avatar || 'assets/img/teacher-hoang-huong.jpg';
       document.querySelectorAll('header img').forEach((img) => {
-        if (img.alt && (img.alt.includes('Hồ sơ') || img.alt.includes('Profile') || img.alt.includes('học sinh'))) {
-          img.src = 'assets/img/teacher-hoang-huong.jpg';
+        if (img.alt && (img.alt.includes('Hồ sơ') || img.alt.includes('Profile') || img.alt.includes('học sinh') || img.alt.includes('Cô Hoàng Hương'))) {
+          img.src = avatarUrl;
           img.alt = teacherName;
         }
       });

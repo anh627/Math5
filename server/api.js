@@ -5,14 +5,109 @@
  * ở endpoint lấy câu hỏi — việc chấm điểm diễn ra 100% trên server.
  */
 const express = require('express');
+const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const db = require('./db');
 const { setAuthCookie, clearAuthCookie, requireAuth, requireTeacher } = require('./auth');
 
 const router = express.Router();
-const publicUser = u => u && ({ id: u.id, username: u.username, fullName: u.full_name, role: u.role, className: u.class_name, studentCode: u.student_code, totalStars: u.total_stars });
+const GOOGLE_CLIENT_ID = globalThis.process.env['GOOGLE_CLIENT_ID'] || '90028108182-nt0tr6dam9d3qvt5akq4v4rr6lpp3h4p.apps.googleusercontent.com';
+
+const publicUser = u => u && ({
+  id: u.id,
+  username: u.username,
+  fullName: u.full_name,
+  role: u.role,
+  className: u.class_name,
+  studentCode: u.student_code,
+  totalStars: u.total_stars,
+  email: u.email || '',
+  avatar: u.avatar || ''
+});
 
 /* ---------------- Xác thực ---------------- */
+router.get('/auth/google/client-id', (req, res) => {
+  res.json({ clientId: GOOGLE_CLIENT_ID });
+});
+
+router.post('/auth/google', async (req, res) => {
+  try {
+    const credential = (req.body && (req.body.credential || req.body.idToken || req.body.id_token)) || '';
+    if (!credential) {
+      return res.status(400).json({ error: 'Thiếu mã xác thực Google (credential/id_token).' });
+    }
+
+    // Xác thực Google ID Token với Google TokenInfo API
+    const verifyUrl = `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`;
+    const googleRes = await fetch(verifyUrl);
+    if (!googleRes.ok) {
+      return res.status(401).json({ error: 'Mã xác thực Google không hợp lệ hoặc đã hết hạn.' });
+    }
+
+    const payload = await googleRes.json();
+
+    // Kiểm tra Audience (Client ID)
+    if (payload.aud !== GOOGLE_CLIENT_ID) {
+      console.warn('[Google Auth] Mismatched aud:', payload.aud, 'expected:', GOOGLE_CLIENT_ID);
+      return res.status(401).json({ error: 'Mã xác thực Google không khớp với ứng dụng này.' });
+    }
+
+    // Kiểm tra email_verified
+    const isVerified = payload.email_verified === 'true' || payload.email_verified === true;
+    if (!isVerified || !payload.email) {
+      return res.status(400).json({ error: 'Tài khoản Google cần có địa chỉ email đã được xác minh.' });
+    }
+
+    const email = String(payload.email).toLowerCase().trim();
+    const googleId = payload.sub;
+    const name = payload.name || payload.given_name || 'Thầy/Cô Giáo';
+    const avatar = payload.picture || '';
+
+    // Tìm tài khoản giáo viên đã liên kết theo google_id hoặc email
+    let user = db.prepare('SELECT * FROM users WHERE (google_id = ? OR LOWER(email) = ?) AND is_active = 1').get(googleId, email);
+
+    if (user) {
+      // Đã có tài khoản: cập nhật avatar, google_id nếu chưa có
+      db.prepare(`
+        UPDATE users 
+        SET google_id = COALESCE(google_id, ?),
+            email = COALESCE(email, ?),
+            avatar = CASE WHEN (avatar IS NULL OR avatar = '') THEN ? ELSE avatar END
+        WHERE id = ?
+      `).run(googleId, email, avatar, user.id);
+      user = db.prepare('SELECT * FROM users WHERE id = ?').get(user.id);
+    } else {
+      // Lần đầu đăng nhập bằng Google: tạo tài khoản giáo viên mới
+      const baseUser = (email.split('@')[0] || 'teacher').toLowerCase().replace(/[^a-z0-9_]/g, '');
+      let candidate = baseUser;
+      let counter = 1;
+      while (db.prepare('SELECT id FROM users WHERE username = ?').get(candidate)) {
+        candidate = `${baseUser}${counter++}`;
+      }
+      const randomPassword = crypto.randomBytes(16).toString('hex');
+      const hash = bcrypt.hashSync(randomPassword, 10);
+
+      const ins = db.prepare(`
+        INSERT INTO users (username, password_hash, full_name, role, class_name, student_code, total_stars, email, avatar, google_id)
+        VALUES (?, ?, ?, 'teacher', 'Khối 3', 'GV-G', 0, ?, ?, ?)
+      `);
+      const info = ins.run(candidate, hash, name, email, avatar, googleId);
+      user = db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);
+      console.log(`[Google Auth] Đã tạo tài khoản giáo viên mới: ${candidate} (${email})`);
+    }
+
+    if (user.role !== 'teacher') {
+      return res.status(403).json({ error: 'Cổng đăng nhập Google này dành riêng cho Giáo viên.' });
+    }
+
+    const token = setAuthCookie(res, user);
+    res.json({ user: publicUser(user), token });
+  } catch (err) {
+    console.error('[Google Auth Error]:', err);
+    res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xác thực với Google. Vui lòng thử lại.' });
+  }
+});
+
 router.post('/auth/login', (req, res) => {
   const { username = '', password = '', role } = req.body || {};
   const user = db.prepare('SELECT * FROM users WHERE username=? AND is_active=1').get(String(username).trim());

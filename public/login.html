@@ -13,6 +13,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="assets/js/tailwind.config.js"></script>
 <link href="assets/css/app.css" rel="stylesheet"/>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body class="bg-background font-body-md text-on-surface antialiased min-h-screen" data-page="login">
 <main class="w-full min-h-screen bg-background"><div class="flex flex-col w-full">
@@ -125,6 +126,27 @@
 <p class="font-body-md text-body-md text-on-surface-variant mt-1" id="formSubtitle">
               Chọn đúng lớp và điền mã của em để bước vào đảo học tập nhé.
             </p>
+</div>
+<!-- KHUNG ĐĂNG NHẬP GOOGLE DÀNH CHO GIÁO VIÊN -->
+<div class="hidden mb-6 p-4 sm:p-5 rounded-2xl bg-surface-container-low border-2 border-primary/25 shadow-sm transition-all duration-300" id="teacherGoogleSection">
+<div class="flex items-center gap-3 mb-3">
+<div class="w-10 h-10 rounded-xl bg-primary-fixed flex items-center justify-center text-primary shadow-sm shrink-0">
+<span class="material-symbols-outlined text-[24px]">verified_user</span>
+</div>
+<div class="flex-1 text-left">
+<h3 class="font-headline-sm text-headline-sm text-primary font-bold">Đăng nhập Google Giáo Viên</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Một chạm vào thẳng Sổ theo dõi &amp; Quản trị lớp học</p>
+</div>
+</div>
+<!-- Nút Google GIS chính thức -->
+<div class="flex justify-center items-center py-2 min-h-[46px]" id="googleBtnWrapper"></div>
+<!-- Dải phân cách -->
+<div class="relative flex items-center justify-center my-3">
+<div class="w-full border-t border-surface-variant/80"></div>
+<span class="absolute bg-surface-container-low px-3 font-label-sm text-label-sm text-on-surface-variant">
+                Hoặc đăng nhập mật khẩu nội bộ bên dưới
+              </span>
+</div>
 </div>
 <!-- FORM CHÍNH -->
 <form class="space-y-4" id="authForm" onsubmit="event.preventDefault(); handleLoginSubmit();">

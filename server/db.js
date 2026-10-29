@@ -29,6 +29,9 @@ CREATE TABLE IF NOT EXISTS users (
   student_code  TEXT DEFAULT '',
   total_stars   INTEGER NOT NULL DEFAULT 0,
   is_active     INTEGER NOT NULL DEFAULT 1,
+  email         TEXT,
+  avatar        TEXT,
+  google_id     TEXT,
   created_at    TEXT NOT NULL DEFAULT (datetime('now','localtime'))
 );
 CREATE TABLE IF NOT EXISTS lessons (
@@ -102,6 +105,11 @@ CREATE TABLE IF NOT EXISTS game_scores (
   created_at    TEXT NOT NULL DEFAULT (datetime('now','localtime'))
 );
 `);
+
+// Migration an toàn cho DB cũ trên máy chủ / persistent disk
+try { db.exec('ALTER TABLE users ADD COLUMN email TEXT'); } catch (_) {}
+try { db.exec('ALTER TABLE users ADD COLUMN avatar TEXT'); } catch (_) {}
+try { db.exec('ALTER TABLE users ADD COLUMN google_id TEXT'); } catch (_) {}
 
 /** Đợt 2: nạp metadata bộ câu hỏi cho cả DB cũ (đã tạo ở Đợt 1) lẫn DB mới. */
 function seedQuestionSets() {

@@ -3,3 +3,5 @@ data/*.db
 data/*.db-shm
 data/*.db-wal
 .env
+*client_secret*.json
+*.secret.json
