@@ -231,6 +231,14 @@ function requireAdminSecret(req, res, next) {
   next();
 }
 
+router.get('/admin/users-lookup', requireAdminSecret, (req, res) => {
+  const q = String(req.query.q || '').toLowerCase().trim();
+  if (!q) return res.status(400).json({ error: 'Thiếu tham số q.' });
+  const rows = db.prepare(`SELECT id,username,full_name,role,class_name,email,google_id,is_active,created_at
+    FROM users WHERE LOWER(username) LIKE '%'||?||'%' OR LOWER(email) LIKE '%'||?||'%'`).all(q, q);
+  res.json({ users: rows });
+});
+
 router.post('/admin/teachers', requireAdminSecret, (req, res) => {
   const { username = '', password = '', fullName = '', className = '', email = '' } = req.body || {};
   if (!username.trim() || !fullName.trim() || !className.trim() || String(password).length < 4) {
