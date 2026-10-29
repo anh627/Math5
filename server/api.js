@@ -218,6 +218,39 @@ router.get('/teacher/students', requireTeacher, (req, res) => {
   res.json({ students: rows });
 });
 
+/* ---------------- Admin: tạo tài khoản giáo viên (thao tác hiếm, không có UI) ---------------- */
+const ADMIN_SECRET = process.env.ADMIN_SECRET;
+if (!ADMIN_SECRET) {
+  console.warn('[Admin] ADMIN_SECRET chưa được cấu hình; tạo tài khoản giáo viên qua API sẽ bị từ chối.');
+}
+function requireAdminSecret(req, res, next) {
+  const given = req.headers['x-admin-secret'] || '';
+  if (!ADMIN_SECRET || given !== ADMIN_SECRET) {
+    return res.status(403).json({ error: 'Không có quyền thực hiện thao tác này.' });
+  }
+  next();
+}
+
+router.post('/admin/teachers', requireAdminSecret, (req, res) => {
+  const { username = '', password = '', fullName = '', className = '', email = '' } = req.body || {};
+  if (!username.trim() || !fullName.trim() || !className.trim() || String(password).length < 4) {
+    return res.status(400).json({ error: 'Cần điền tên đăng nhập, họ tên, lớp và mật khẩu từ 4 ký tự.' });
+  }
+  if (db.prepare('SELECT id FROM users WHERE username=?').get(username.trim())) {
+    return res.status(409).json({ error: 'Tên đăng nhập này đã tồn tại.' });
+  }
+  const normalizedEmail = String(email).toLowerCase().trim();
+  if (normalizedEmail && db.prepare('SELECT id FROM users WHERE LOWER(email)=?').get(normalizedEmail)) {
+    return res.status(409).json({ error: 'Email này đã được gán cho tài khoản khác.' });
+  }
+  const info = db.prepare(`INSERT INTO users (username,password_hash,full_name,role,class_name,student_code,email)
+    VALUES (?,?,?,'teacher',?,?,?)`).run(
+      username.trim(), bcrypt.hashSync(String(password), 10), fullName.trim(),
+      className.trim(), 'GV-' + className.trim(), normalizedEmail || null,
+    );
+  res.status(201).json({ teacher: { id: info.lastInsertRowid, username: username.trim(), fullName: fullName.trim(), className: className.trim(), email: normalizedEmail } });
+});
+
 router.post('/teacher/students', requireTeacher, (req, res) => {
   const { username = '', password = '', fullName = '', studentCode = '' } = req.body || {};
   if (!username.trim() || !fullName.trim() || String(password).length < 4) {
