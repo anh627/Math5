@@ -104,6 +104,7 @@
   }
   function rowHtml(s) {
     const avg = s.avg_score;
+    const jsArg = value => JSON.stringify(String(value ?? '')).replace(/"/g, '&quot;');
     const initials = s.full_name.split(' ').map(w => w[0]).slice(-2).join('').toUpperCase();
     const status = avg == null ? 'Chưa có lượt làm bài' : avg >= 90 ? 'Xuất sắc' : avg < 60 ? 'Cần bồi dưỡng' : 'Đạt chuẩn';
     const note = avg == null ? 'Chưa có dữ liệu' : avg < 60 ? 'Cần theo dõi thêm' : avg >= 90 ? 'Nắm vững kiến thức' : 'Tiếp tục rèn luyện';
@@ -115,8 +116,10 @@
       <td class="py-3 px-3 text-center"><span class="font-headline-sm text-label-lg font-extrabold">${avg == null ? '—' : avg}</span></td>
       <td class="py-3 px-3 text-center font-bold text-on-surface-variant">${s.attempts_count} lượt</td>
       <td class="py-3 px-4"><span class="inline-block px-2.5 py-1 rounded-lg bg-surface-container text-on-surface-variant font-label-sm text-[13px]">${note}</span></td>
-      <td class="py-3 px-4 text-center"><button type="button" class="px-3 py-1.5 rounded-xl bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-bold"
-        onclick="resetStudentPassword(${s.id}, '${s.full_name.replace(/'/g, '')}')">Đặt lại MK</button></td>`;
+      <td class="py-3 px-4 text-center"><div class="flex justify-center gap-2"><button type="button" class="px-3 py-1.5 rounded-xl bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-bold"
+        onclick="resetStudentPassword(${s.id}, ${jsArg(s.full_name)})">Đặt lại MK</button><button type="button" class="px-3 py-1.5 rounded-xl bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-bold"
+        onclick="window.editStudent(${s.id}, ${jsArg(s.full_name)}, ${jsArg(s.username)}, ${jsArg(s.student_code)})">Sửa</button><button type="button" class="px-3 py-1.5 rounded-xl bg-error text-on-error font-label-sm text-label-sm font-bold"
+        onclick="window.deleteStudent(${s.id}, ${jsArg(s.full_name)})">Xóa</button></div></td>`;
   }
 
   async function loadStudents() {
@@ -137,6 +140,33 @@
     if (!pw) return;
     try { await window.MathAPI.post(`/api/teacher/students/${id}/reset-password`, { password: pw }); alert('Đã đặt lại mật khẩu.'); }
     catch (err) { alert(err.message); }
+  };
+
+  window.editStudent = async function (id, fullName, username, studentCode) {
+    const newFullName = prompt('Họ tên mới:', fullName);
+    if (newFullName === null) return;
+    const newUsername = prompt('Tên đăng nhập mới:', username);
+    if (newUsername === null) return;
+    const newStudentCode = prompt('Mã học sinh mới:', studentCode || '');
+    if (newStudentCode === null) return;
+    try {
+      await window.MathAPI.put(`/api/teacher/students/${id}`, {
+        fullName: newFullName,
+        username: newUsername,
+        studentCode: newStudentCode,
+      });
+      alert('Đã cập nhật thông tin học sinh.');
+      loadStudents();
+    } catch (err) { alert(err.message); }
+  };
+
+  window.deleteStudent = async function (id, fullName) {
+    if (!confirm(`Xóa tài khoản của ${fullName}? Học sinh sẽ không đăng nhập được nữa.`)) return;
+    try {
+      await window.MathAPI.del(`/api/teacher/students/${id}`);
+      alert('Đã xóa tài khoản học sinh.');
+      loadStudents();
+    } catch (err) { alert(err.message); }
   };
 
   // Form tạo tài khoản — chèn ngay phía trên bảng danh sách học sinh

@@ -137,7 +137,7 @@ router.get('/teacher/students', requireTeacher, (req, res) => {
 });
 
 router.post('/teacher/students', requireTeacher, (req, res) => {
-  const { username = '', password = '', fullName = '', className = '3A', studentCode = '' } = req.body || {};
+  const { username = '', password = '', fullName = '', studentCode = '' } = req.body || {};
   if (!username.trim() || !fullName.trim() || String(password).length < 4) {
     return res.status(400).json({ error: 'Cần điền tên đăng nhập, họ tên và mật khẩu từ 4 ký tự.' });
   }
@@ -145,8 +145,8 @@ router.post('/teacher/students', requireTeacher, (req, res) => {
     return res.status(409).json({ error: 'Tên đăng nhập này đã tồn tại.' });
   }
   const info = db.prepare(`INSERT INTO users (username,password_hash,full_name,role,class_name,student_code)
-    VALUES (?,?,?,'student',?,?)`).run(username.trim(), bcrypt.hashSync(String(password), 10), fullName.trim(), className, studentCode.trim());
-  res.status(201).json({ student: { id: info.lastInsertRowid, username: username.trim(), fullName: fullName.trim(), className } });
+    VALUES (?,?,?,'student',?,?)`).run(username.trim(), bcrypt.hashSync(String(password), 10), fullName.trim(), req.user.class_name, studentCode.trim());
+  res.status(201).json({ student: { id: info.lastInsertRowid, username: username.trim(), fullName: fullName.trim(), className: req.user.class_name } });
 });
 
 router.delete('/teacher/students/:id', requireTeacher, (req, res) => {
@@ -163,6 +163,27 @@ router.post('/teacher/students/:id/reset-password', requireTeacher, (req, res) =
   if (!student) return res.status(404).json({ error: 'Không tìm thấy học sinh trong lớp của bạn.' });
   db.prepare("UPDATE users SET password_hash=? WHERE id=? AND role='student' AND class_name=?").run(bcrypt.hashSync(String(password), 10), req.params.id, req.user.class_name);
   res.json({ ok: true });
+});
+
+router.put('/teacher/students/:id', requireTeacher, (req, res) => {
+  const { fullName = '', username = '', studentCode = '' } = req.body || {};
+  const student = db.prepare("SELECT id FROM users WHERE id=? AND role='student' AND class_name=?").get(req.params.id, req.user.class_name);
+  if (!student) return res.status(404).json({ error: 'Không tìm thấy học sinh trong lớp của bạn.' });
+  if (!String(username).trim() || !String(fullName).trim()) {
+    return res.status(400).json({ error: 'Cần điền tên đăng nhập và họ tên.' });
+  }
+  if (db.prepare('SELECT id FROM users WHERE username=? AND id<>?').get(String(username).trim(), req.params.id)) {
+    return res.status(409).json({ error: 'Tên đăng nhập này đã tồn tại.' });
+  }
+  const updated = {
+    id: student.id,
+    fullName: String(fullName).trim(),
+    username: String(username).trim(),
+    studentCode: String(studentCode ?? '').trim(),
+  };
+  db.prepare("UPDATE users SET full_name=?, username=?, student_code=? WHERE id=? AND role='student' AND class_name=?")
+    .run(updated.fullName, updated.username, updated.studentCode, req.params.id, req.user.class_name);
+  res.json({ ok: true, student: updated });
 });
 
 router.get('/teacher/overview', requireTeacher, (req, res) => {
