@@ -90,27 +90,78 @@ document.addEventListener('mathapp:user-ready', async () => {
 document.addEventListener('mathapp:user-ready', async () => {
   try {
     const { assignments } = await window.MathAPI.get('/api/me/assignments');
-    if (!assignments.length) return;
-    const anchor = document.querySelector('[data-lesson-card]')?.closest('section');
+    if (!assignments || !assignments.length) return;
+
+    // Tìm vị trí chèn: Ưu tiên trước khối Lộ Trình Bản Đồ hoặc trước lưới bài học
+    const roadmapSec = [...document.querySelectorAll('section')].find(s => s.textContent.includes('Lộ Trình Bản Đồ'));
+    const anchor = roadmapSec || document.querySelector('[data-lesson-card]')?.closest('section');
     if (!anchor) return;
+
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
     const card = document.createElement('section');
-    card.className = 'rounded-3xl bg-surface-container-lowest shadow-sm p-5 mb-6';
+    card.className = 'w-full px-gutter-mobile lg:px-margin max-w-7xl mx-auto py-3';
     card.innerHTML = `
-      <h2 class="font-headline-md text-headline-md text-primary mb-3">📋 Bài được giao</h2>
-      <div class="space-y-2">${assignments.map(a => {
-        const due = a.dueDate ? a.dueDate.split('-').reverse().join('/') : '';
-        const status = a.done ? `Đã làm — ${a.bestScore}%` : 'Chưa làm';
-        return `<button type="button" data-assignment-set="${esc(a.setId)}" data-assignment-lesson="${esc(a.lessonId)}" class="w-full text-left p-3 rounded-2xl bg-surface-container-low flex flex-wrap items-center gap-2">
-          <span class="font-headline-sm text-primary flex-1 min-w-[180px]">${esc(a.setTitle)}</span>
-          ${due ? `<span class="px-2.5 py-1 rounded-xl bg-surface-container font-label-sm">Hạn ${due}</span>` : ''}
-          <span class="font-label-md ${a.done ? 'text-primary' : 'text-on-surface-variant'}">${status}</span>
-        </button>`;
-      }).join('')}</div>`;
+      <div class="rounded-3xl bg-surface-container-lowest p-5 lg:p-6 shadow-[0_6px_0_0_#d5e5d7,0_16px_28px_-6px_rgba(0,97,39,0.1)] border-2 border-primary/20 flex flex-col gap-4">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 shadow-sm">
+              <span class="material-symbols-outlined text-[26px]">assignment</span>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 class="font-headline-md text-headline-sm text-primary font-bold">📋 Bài Được Giao</h2>
+                <span class="px-2.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-headline-sm text-[12px]">${assignments.length} nhiệm vụ</span>
+              </div>
+              <p class="font-body-md text-label-sm text-on-surface-variant mt-0.5">Nhiệm vụ giáo viên giao cho lớp — hoàn thành đúng hạn để nhận thêm sao thưởng!</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-3">
+          ${assignments.map(a => {
+            const due = a.dueDate ? a.dueDate.split('-').reverse().join('/') : '';
+            const isDone = Boolean(a.done);
+            return `
+              <div class="group flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-surface-container-low hover:bg-surface-container-lowest transition-all border border-outline-variant/30 hover:border-primary/40 shadow-sm hover:shadow-md">
+                <div class="flex items-start sm:items-center gap-3 flex-1 min-w-0">
+                  <div class="w-10 h-10 rounded-xl ${isDone ? 'bg-secondary-fixed text-on-secondary-fixed' : 'bg-tertiary-fixed text-on-tertiary-fixed'} flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <span class="material-symbols-outlined text-[22px]">${isDone ? 'task_alt' : 'edit_document'}</span>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <h3 class="font-headline-sm text-label-lg text-on-surface font-bold group-hover:text-primary transition-colors">${esc(a.setTitle)}</h3>
+                      <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-headline-sm text-[11px] ${isDone ? 'bg-primary-fixed text-on-primary-fixed' : 'bg-tertiary text-on-tertiary'}">
+                        ${isDone ? `✓ Đã làm (${a.bestScore}%)` : 'Chưa làm'}
+                      </span>
+                    </div>
+                    ${due ? `
+                      <p class="font-label-sm text-[12px] text-on-surface-variant flex items-center gap-1 mt-1">
+                        <span class="material-symbols-outlined text-[14px] text-tertiary">calendar_clock</span>
+                        <span>Hạn hoàn thành: <strong class="text-on-surface">${due}</strong></span>
+                      </p>
+                    ` : ''}
+                  </div>
+                </div>
+
+                <button type="button" data-assignment-set="${esc(a.setId)}" data-assignment-lesson="${esc(a.lessonId)}" class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl ${isDone ? 'bg-surface-container hover:bg-surface-container-high text-on-surface shadow-[0_3px_0_0_#bfcabb]' : 'bg-primary hover:bg-primary-container text-on-primary shadow-[0_3px_0_0_#00471c]'} active:translate-y-0.5 active:shadow-none font-headline-sm text-label-sm whitespace-nowrap transition-all cursor-pointer">
+                  <span class="material-symbols-outlined text-[18px]">${isDone ? 'refresh' : 'play_arrow'}</span>
+                  <span>${isDone ? 'Làm lại bài' : 'Vào làm bài'}</span>
+                </button>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+
     card.addEventListener('click', (e) => {
-      const row = e.target.closest('[data-assignment-set]');
-      if (row) location.href = 'lesson.html?' + (row.dataset.assignmentLesson ? 'lesson=' + row.dataset.assignmentLesson + '&' : '') + 'set=' + row.dataset.assignmentSet;
+      const btn = e.target.closest('[data-assignment-set]');
+      if (btn) {
+        location.href = 'lesson.html?' + (btn.dataset.assignmentLesson ? 'lesson=' + btn.dataset.assignmentLesson + '&' : '') + 'set=' + btn.dataset.assignmentSet;
+      }
     });
+
     anchor.insertAdjacentElement('beforebegin', card);
   } catch (err) { console.warn('Không tải được bài tập đã giao:', err.message); }
 });
