@@ -92,8 +92,8 @@ document.addEventListener('mathapp:user-ready', async () => {
     const { assignments } = await window.MathAPI.get('/api/me/assignments');
     if (!assignments || !assignments.length) return;
 
-    // Tìm vị trí chèn: Ưu tiên trước khối Lộ Trình Bản Đồ hoặc trước lưới bài học
-    const roadmapSec = [...document.querySelectorAll('section')].find(s => s.textContent.includes('Lộ Trình Bản Đồ'));
+    // Tìm vị trí chèn: Ưu tiên trước khối Mục lục SGK hoặc trước lưới bài học
+    const roadmapSec = document.getElementById('muc-luc-sgk-section') || [...document.querySelectorAll('section')].find(s => s.textContent.includes('Lộ Trình Bản Đồ'));
     const anchor = roadmapSec || document.querySelector('[data-lesson-card]')?.closest('section');
     if (!anchor) return;
 
