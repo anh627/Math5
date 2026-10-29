@@ -105,7 +105,7 @@ window.MathApp.components.Sidebar = {
       <!-- 1. Logo tròn Trường Tiểu học Hoàng Mai ở đỉnh Sidebar -->
       <div class="flex flex-col items-center mb-2">
         <a href="index.html" title="Vườn Toán Lớp 3 — Trường Tiểu học Hoàng Mai" class="w-11 h-11 lg:w-12 lg:h-12 rounded-full overflow-hidden p-0.5 border-2 border-primary/30 hover:scale-105 transition-transform shadow-sm flex items-center justify-center bg-white">
-          <img alt="Logo Hoàng Mai" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5cjuWWAWsjimfXPTn37XDLU9xQesLsZAhpXmz3qKg6zVBRXPYMUjkoy-u3U2wiL_yrqsnHsIgOzm9-nS0UWwpaKbbVQOwW8mW8SyGA8Nloqjgx9JlcGE9Vtnrjx7AJa39zCrfwQPTfHf1aB9jkJUzew1Qkj12tiD4YtF0Dd8cNQsRpPZYsW-AIubPqVcPo2OFVI3aKps_DVjfVlf5uBkjBNCeKiJ6P-_eCLFvTEl5uEWKgZzltQgwNg"/>
+          <img alt="Logo Hoàng Mai" class="w-full h-full object-contain" src="assets/img/logo-hoang-mai.png" onerror="this.src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcThBBy5Atw5daAj5mCr2MkSSAVFQ4Rw_JMi4YK1TQQwrA&s=10'"/>
         </a>
       </div>
 
@@ -126,10 +126,10 @@ window.MathApp.components.Sidebar = {
         </div>
 
         <!-- Avatar học sinh -->
-        <div class="relative group cursor-pointer" title="${u.fullName || 'Hồ sơ học sinh'}">
-          <img alt="Avatar" class="w-9 h-9 rounded-full object-cover ring-2 ring-primary/30 group-hover:ring-primary transition-all" src="${u.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDKwA6FT33BYSGdO7z6NLWGOVMAz6PyDh1E0kzf5-4Jvs9IlUa9osjTxIXPXV-SiFr0-mXjeZ74Qb_GUTnRX2F5TYyF9mPoUne33RlMuy7UGiGYAjE_Ohrnd1KFtfLB3IciZMNb82xMZ_ElTdn4e4fIhabnLLL2wAwILSbWyGw7vjQJ69Pf-_Km0CwIhQ90vjGunVdgmOyT2a9i2YxWiHYyM80L0aXMA0ZpmFcwDyP86T0St2quGf_YAw'}"/>
+        <div class="relative group cursor-pointer" title="${u.fullName || 'Hồ sơ người dùng'}">
+          <img alt="Avatar" class="w-9 h-9 rounded-full object-cover ring-2 ring-primary/30 group-hover:ring-primary transition-all" src="${u.avatar || 'assets/img/student-avatar.jpg'}" onerror="this.src='https://img.magnific.com/vector-mien-phi/hinh-minh-hoa-hoat-hinh-nu-sinh-tuoi-cuoi_56104-2934.jpg?semt=ais_hybrid&w=740&q=80'"/>
           <span class="hidden md:block absolute left-full ml-3 px-3 py-1.5 rounded-xl bg-inverse-surface text-inverse-on-surface font-headline-sm text-[12px] shadow-xl whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 group-hover:translate-x-1 transition-all z-50">
-            ${u.fullName || 'Bảo Nam'} • ${u.className || (isTeacher ? 'Giáo viên' : 'Lớp 3A')}
+            ${u.fullName || (isTeacher ? 'Cô Hoàng Hương' : 'Bảo Nam')} • ${u.className || (isTeacher ? 'Lớp 3A2' : 'Lớp 3A2')}
           </span>
         </div>
 
