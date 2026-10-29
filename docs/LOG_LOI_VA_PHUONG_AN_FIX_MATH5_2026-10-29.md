@@ -2,7 +2,7 @@
 **Tài liệu bàn giao kỹ thuật & hướng dẫn cho Codex / Developer**  
 *Thời gian lập:* 29/10/2026  
 *Dự án:* Math5 (Vườn Toán Lớp 3)  
-*Môi trường:* Local (`D:\Antigravity\Math5`), Remote GitHub (`fossbk-spec/Math5`), Hosting (`math5-production.up.railway.app`)  
+*Môi trường:* Local (`C:\Antigravity\Math5`), Remote GitHub (`fossbk-spec/Math5`), Hosting (`math5-production.up.railway.app`)  
 *Tham chiếu đối sánh:* [https://vuon-toan-3.onrender.com/index.html](https://vuon-toan-3.onrender.com/index.html)
 
 ---
@@ -74,7 +74,7 @@ Trong quá trình đưa dự án Math5 từ kho lưu trữ cục bộ lên tri�
 - **Chọn sai anchor:** `anchor` là section chứa grid bài học, nằm ngay sau section tiêu đề của lộ trình, khiến khối bài giao bị chèn xen vào giữa tiêu đề và nội dung của cùng một khối chức năng.
 
 ### 3. Phương án xử lý (Fixing Code)
-- Tệp chỉnh sửa: [public/assets/js/pages/index.js](file:///d:/Antigravity/Math5/public/assets/js/pages/index.js)
+- Tệp chỉnh sửa: [public/assets/js/pages/index.js](file:///c:/Antigravity/Math5/public/assets/js/pages/index.js)
 - Thêm container bọc chuẩn, đổi vị trí chèn lên trước section Lộ Trình, bổ sung thiết kế 3D Tactile Pop:
 ```javascript
 // Tìm vị trí chèn: Ưu tiên trước khối Lộ Trình Bản Đồ
@@ -112,11 +112,11 @@ anchor.insertAdjacentElement('beforebegin', card);
 - Thư viện Tailwind CSS trên Math5 được nạp qua CDN (`<script src="https://cdn.tailwindcss.com"></script>`). Tailwind CDN chỉ quét các class tĩnh có sẵn trong HTML ban đầu. Khi Sidebar được tạo động bằng JS với các class như `hidden md:flex w-16 fixed ...`, Tailwind không sinh kịp CSS tương ứng, khiến phần tử bị rơi vào trạng thái ẩn (`display: none`).
 
 ### 3. Phương án xử lý (Fixing Steps)
-1. **Viết component hoàn chỉnh cho Sidebar:** [public/assets/js/components/sidebar.js](file:///d:/Antigravity/Math5/public/assets/js/components/sidebar.js)
+1. **Viết component hoàn chỉnh cho Sidebar:** [public/assets/js/components/sidebar.js](file:///c:/Antigravity/Math5/public/assets/js/components/sidebar.js)
    - Khởi tạo `window.MathApp.components.Sidebar = { init(user), render(user), renderMobileNav() }`.
    - Cung cấp đủ 6 trạm điều hướng: *Trang Chủ, Mục Lục SGK, Luyện Tập, Đấu Trường Trò Chơi, Bảng Xếp Hạng, Góc Thầy Cô*.
    - Khối tiện ích đáy: Huy hiệu sao tích lũy `⭐`, Avatar học sinh có tooltip tên/lớp, Nút Đăng xuất (`logout`).
-2. **Định nghĩa CSS thuần độc lập (Standalone CSS):** [public/assets/css/app.css](file:///d:/Antigravity/Math5/public/assets/css/app.css)
+2. **Định nghĩa CSS thuần độc lập (Standalone CSS):** [public/assets/css/app.css](file:///c:/Antigravity/Math5/public/assets/css/app.css)
    ```css
    #app-sidebar {
      position: fixed !important;
@@ -140,7 +140,7 @@ anchor.insertAdjacentElement('beforebegin', card);
    }
    ```
 3. **Thêm thẻ tĩnh trực tiếp vào HTML:**
-   - Bổ sung `<aside id="app-sidebar"></aside>` ngay sau thẻ `<body>` trong [index.html](file:///d:/Antigravity/Math5/public/index.html) và [leaderboard.html](file:///d:/Antigravity/Math5/public/leaderboard.html).
+   - Bổ sung `<aside id="app-sidebar"></aside>` ngay sau thẻ `<body>` trong [index.html](file:///c:/Antigravity/Math5/public/index.html) và [leaderboard.html](file:///c:/Antigravity/Math5/public/leaderboard.html).
 
 ---
 
@@ -153,14 +153,14 @@ anchor.insertAdjacentElement('beforebegin', card);
 
 ### 2. Phương án xử lý (Fixing Steps)
 1. **Tải tài nguyên trực tiếp từ `vuon-toan-3.onrender.com` về lưu trữ cục bộ:**
-   - Logo trường: [public/assets/img/logo-hoang-mai.png](file:///d:/Antigravity/Math5/public/assets/img/logo-hoang-mai.png) (43.7 KB).
-   - Ảnh chân dung cô giáo: [public/assets/img/teacher-hoang-huong.jpg](file:///d:/Antigravity/Math5/public/assets/img/teacher-hoang-huong.jpg) (210 KB).
-   - Avatar học sinh: [public/assets/img/student-avatar.jpg](file:///d:/Antigravity/Math5/public/assets/img/student-avatar.jpg) (41.1 KB).
+   - Logo trường: [public/assets/img/logo-hoang-mai.png](file:///c:/Antigravity/Math5/public/assets/img/logo-hoang-mai.png) (43.7 KB).
+   - Ảnh chân dung cô giáo: [public/assets/img/teacher-hoang-huong.jpg](file:///c:/Antigravity/Math5/public/assets/img/teacher-hoang-huong.jpg) (210 KB).
+   - Avatar học sinh: [public/assets/img/student-avatar.jpg](file:///c:/Antigravity/Math5/public/assets/img/student-avatar.jpg) (41.1 KB).
 2. **Cập nhật giao diện:**
-   - [public/index.html](file:///d:/Antigravity/Math5/public/index.html): Đổi thẻ lời dặn thành *"Lời dặn của Cô Hoàng Hương (GV Chủ nhiệm 3A2)"*, gán ảnh `teacher-hoang-huong.jpg`.
-   - [public/assets/js/components/sidebar.js](file:///d:/Antigravity/Math5/public/assets/js/components/sidebar.js): Trỏ logo và avatar về thư mục cục bộ `assets/img/`.
+   - [public/index.html](file:///c:/Antigravity/Math5/public/index.html): Đổi thẻ lời dặn thành *"Lời dặn của Cô Hoàng Hương (GV Chủ nhiệm 3A2)"*, gán ảnh `teacher-hoang-huong.jpg`.
+   - [public/assets/js/components/sidebar.js](file:///c:/Antigravity/Math5/public/assets/js/components/sidebar.js): Trỏ logo và avatar về thư mục cục bộ `assets/img/`.
 3. **Đồng bộ cơ sở dữ liệu mẫu:**
-   - [data/seed.json](file:///d:/Antigravity/Math5/data/seed.json): Cập nhật tài khoản `giaovien01` có `fullName`: `"Cô Hoàng Hương"`, `className`: `"3A2"`.
+   - [data/seed.json](file:///c:/Antigravity/Math5/data/seed.json): Cập nhật tài khoản `giaovien01` có `fullName`: `"Cô Hoàng Hương"`, `className`: `"3A2"`.
 
 ---
 
@@ -172,7 +172,7 @@ anchor.insertAdjacentElement('beforebegin', card);
   - **Sau 1 giây (Giao diện 2):** Toàn bộ nội dung chính biến mất hoàn toàn, để lại một màn hình trắng tinh, thanh Footer bị kéo giật ngược lên tận đỉnh trang (như ảnh người dùng phản hồi).
 
 ### 2. Nguyên nhân kỹ thuật (Root Cause)
-- Đây là lỗi logic thao tác DOM mang tính phá hủy (Destructive DOM manipulation) trong file [public/assets/js/pages/leaderboard.js](file:///d:/Antigravity/Math5/public/assets/js/pages/leaderboard.js).
+- Đây là lỗi logic thao tác DOM mang tính phá hủy (Destructive DOM manipulation) trong file [public/assets/js/pages/leaderboard.js](file:///c:/Antigravity/Math5/public/assets/js/pages/leaderboard.js).
 - Đoạn mã ban đầu:
   ```javascript
   document.addEventListener('mathapp:user-ready', async (e) => {
@@ -199,7 +199,7 @@ anchor.insertAdjacentElement('beforebegin', card);
   5. Kết quả: Toàn bộ nội dung bên trong `<main>` bị biến mất hoặc co về chiều cao 0px, khiến màn hình trắng tinh và kéo Footer lên tận đỉnh!
 
 ### 3. Phương án xử lý (Fixing Code)
-- Tệp chỉnh sửa: [public/assets/js/pages/leaderboard.js](file:///d:/Antigravity/Math5/public/assets/js/pages/leaderboard.js)
+- Tệp chỉnh sửa: [public/assets/js/pages/leaderboard.js](file:///c:/Antigravity/Math5/public/assets/js/pages/leaderboard.js)
 - **Quy tắc sửa:** Tuyệt đối KHÔNG xóa phần tử gốc bằng `replaceWith` hoặc `style.display = 'none'`. Chỉ cập nhật giá trị số liệu vào DOM có sẵn:
 ```javascript
 /* Trang Bảng Xếp Hạng: Cập nhật dữ liệu thật mượt mà, an toàn, giữ nguyên 100% giao diện 3D xúc giác */

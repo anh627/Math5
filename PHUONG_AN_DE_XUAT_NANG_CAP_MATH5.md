@@ -126,7 +126,7 @@ flowchart LR
 
 ### 4.1. Cấu trúc bảng SQLite mới: `assignments`
 
-Thêm vào tệp [server/db.js](file:///d:/Antigravity/Math5/server/db.js):
+Thêm vào tệp [server/db.js](file:///c:/Antigravity/Math5/server/db.js):
 
 ```sql
 CREATE TABLE IF NOT EXISTS assignments (
