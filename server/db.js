@@ -82,6 +82,16 @@ CREATE TABLE IF NOT EXISTS question_sets (
   star_reward      INTEGER NOT NULL DEFAULT 40,
   duration_minutes INTEGER DEFAULT 0
 );
+CREATE TABLE IF NOT EXISTS assignments (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  set_id      TEXT NOT NULL REFERENCES question_sets(id),
+  class_name  TEXT NOT NULL,
+  due_date    TEXT,
+  note        TEXT DEFAULT '',
+  created_by  INTEGER REFERENCES users(id),
+  created_at  TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+  UNIQUE(set_id, class_name)
+);
 CREATE TABLE IF NOT EXISTS game_scores (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id       INTEGER NOT NULL REFERENCES users(id),

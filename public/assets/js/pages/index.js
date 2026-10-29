@@ -85,3 +85,32 @@ document.addEventListener('mathapp:user-ready', async () => {
     });
   } catch (err) { console.warn('Không tải được danh sách bài học:', err.message); }
 });
+
+/* --- ĐỢT 4: BÀI TẬP GIÁO VIÊN GIAO CHO LỚP --- */
+document.addEventListener('mathapp:user-ready', async () => {
+  try {
+    const { assignments } = await window.MathAPI.get('/api/me/assignments');
+    if (!assignments.length) return;
+    const anchor = document.querySelector('[data-lesson-card]')?.closest('section');
+    if (!anchor) return;
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const card = document.createElement('section');
+    card.className = 'rounded-3xl bg-surface-container-lowest shadow-sm p-5 mb-6';
+    card.innerHTML = `
+      <h2 class="font-headline-md text-headline-md text-primary mb-3">📋 Bài được giao</h2>
+      <div class="space-y-2">${assignments.map(a => {
+        const due = a.dueDate ? a.dueDate.split('-').reverse().join('/') : '';
+        const status = a.done ? `Đã làm — ${a.bestScore}%` : 'Chưa làm';
+        return `<button type="button" data-assignment-set="${esc(a.setId)}" data-assignment-lesson="${esc(a.lessonId)}" class="w-full text-left p-3 rounded-2xl bg-surface-container-low flex flex-wrap items-center gap-2">
+          <span class="font-headline-sm text-primary flex-1 min-w-[180px]">${esc(a.setTitle)}</span>
+          ${due ? `<span class="px-2.5 py-1 rounded-xl bg-surface-container font-label-sm">Hạn ${due}</span>` : ''}
+          <span class="font-label-md ${a.done ? 'text-primary' : 'text-on-surface-variant'}">${status}</span>
+        </button>`;
+      }).join('')}</div>`;
+    card.addEventListener('click', (e) => {
+      const row = e.target.closest('[data-assignment-set]');
+      if (row) location.href = 'lesson.html?' + (row.dataset.assignmentLesson ? 'lesson=' + row.dataset.assignmentLesson + '&' : '') + 'set=' + row.dataset.assignmentSet;
+    });
+    anchor.insertAdjacentElement('beforebegin', card);
+  } catch (err) { console.warn('Không tải được bài tập đã giao:', err.message); }
+});
