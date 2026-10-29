@@ -5,13 +5,15 @@
  * ở endpoint lấy câu hỏi — việc chấm điểm diễn ra 100% trên server.
  */
 const express = require('express');
-const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const db = require('./db');
 const { setAuthCookie, clearAuthCookie, requireAuth, requireTeacher } = require('./auth');
 
 const router = express.Router();
-const GOOGLE_CLIENT_ID = globalThis.process.env['GOOGLE_CLIENT_ID'] || '90028108182-nt0tr6dam9d3qvt5akq4v4rr6lpp3h4p.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+if (!GOOGLE_CLIENT_ID) {
+  console.warn('[Google Auth] GOOGLE_CLIENT_ID chưa được cấu hình; đăng nhập Google sẽ bị từ chối.');
+}
 
 const publicUser = u => u && ({
   id: u.id,
@@ -60,7 +62,6 @@ router.post('/auth/google', async (req, res) => {
 
     const email = String(payload.email).toLowerCase().trim();
     const googleId = payload.sub;
-    const name = payload.name || payload.given_name || 'Thầy/Cô Giáo';
     const avatar = payload.picture || '';
 
     // Tìm tài khoản giáo viên đã liên kết theo google_id hoặc email
@@ -77,23 +78,9 @@ router.post('/auth/google', async (req, res) => {
       `).run(googleId, email, avatar, user.id);
       user = db.prepare('SELECT * FROM users WHERE id = ?').get(user.id);
     } else {
-      // Lần đầu đăng nhập bằng Google: tạo tài khoản giáo viên mới
-      const baseUser = (email.split('@')[0] || 'teacher').toLowerCase().replace(/[^a-z0-9_]/g, '');
-      let candidate = baseUser;
-      let counter = 1;
-      while (db.prepare('SELECT id FROM users WHERE username = ?').get(candidate)) {
-        candidate = `${baseUser}${counter++}`;
-      }
-      const randomPassword = crypto.randomBytes(16).toString('hex');
-      const hash = bcrypt.hashSync(randomPassword, 10);
-
-      const ins = db.prepare(`
-        INSERT INTO users (username, password_hash, full_name, role, class_name, student_code, total_stars, email, avatar, google_id)
-        VALUES (?, ?, ?, 'teacher', 'Khối 3', 'GV-G', 0, ?, ?, ?)
-      `);
-      const info = ins.run(candidate, hash, name, email, avatar, googleId);
-      user = db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);
-      console.log(`[Google Auth] Đã tạo tài khoản giáo viên mới: ${candidate} (${email})`);
+      return res.status(403).json({
+        error: 'Email này chưa được cấp quyền đăng nhập. Liên hệ quản trị viên để được thêm vào hệ thống.'
+      });
     }
 
     if (user.role !== 'teacher') {
