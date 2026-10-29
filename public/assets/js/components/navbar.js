@@ -30,7 +30,7 @@ window.MathApp.components.Navbar = {
     // Cập nhật slogan linh vật Ong Vàng Hoàng Mai
     const mascotSlogan = document.getElementById('mascot-slogan');
     if (mascotSlogan) {
-      mascotSlogan.textContent = 'Đồng hành cùng học sinh Hoàng Mai';
+      mascotSlogan.textContent = 'Đồng hành cùng học sinh';
     }
 
     // Cập nhật avatar giáo viên trên Header nếu đang đăng nhập là giáo viên
