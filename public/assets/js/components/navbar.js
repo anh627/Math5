@@ -14,16 +14,30 @@ window.MathApp.components.Navbar = {
     const isTeacher = user.role === 'teacher';
     const teacherName = 'Cô Hoàng Hương (GV Chủ nhiệm 3A2)';
 
-    // Thay tên mẫu "Bảo Nam" bằng tên thật trong vùng header/footer
+    // Thay tên mẫu "Bảo Nam" hoặc "Học sinh" bằng tên thật trong vùng header/footer
     document.querySelectorAll('header span, header p, footer span, footer p').forEach((el) => {
       const text = el.textContent.trim();
-      if (text === 'Bảo Nam' || text === 'Nguyễn Bảo Nam') {
-        el.textContent = isTeacher ? teacherName : user.fullName;
+      if (text === 'Bảo Nam' || text === 'Nguyễn Bảo Nam' || text === 'Học sinh') {
+        el.textContent = isTeacher ? teacherName : (user.fullName || 'Học sinh Lớp 3A2');
       }
       if (isTeacher && (text.includes('Lớp 3A') || text.includes('Lớp 3A2'))) {
         el.textContent = 'GV Chủ nhiệm 3A2';
+      } else if (!isTeacher && text === 'Lớp 3A') {
+        el.textContent = user.className ? `Lớp ${user.className}` : 'Lớp 3A2';
       }
     });
+
+    // Cập nhật slogan linh vật Ong Vàng Hoàng Mai
+    const mascotSlogan = document.getElementById('mascot-slogan');
+    if (mascotSlogan) {
+      if (isTeacher) {
+        mascotSlogan.textContent = 'Đồng hành cùng các bạn nhỏ Lớp 3A2';
+      } else if (user.fullName && !user.fullName.includes('Bảo Nam') && !user.fullName.includes('Học sinh Lớp 3A2') && !user.fullName.includes('Học sinh')) {
+        mascotSlogan.textContent = `Đồng hành cùng ${user.fullName}`;
+      } else {
+        mascotSlogan.textContent = 'Đồng hành cùng học sinh Lớp 3A2';
+      }
+    }
 
     // Cập nhật avatar giáo viên trên Header nếu đang đăng nhập là giáo viên
     if (isTeacher) {

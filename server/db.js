@@ -154,9 +154,12 @@ function seedIfEmpty() {
 seedIfEmpty();
 seedQuestionSets();
 
-// Đảm bảo thông tin Cô Hoàng Hương (GV Chủ nhiệm 3A2) luôn được cập nhật chính xác
+// Đảm bảo thông tin Cô Hoàng Hương (GV Chủ nhiệm 3A2) và học sinh luôn được cập nhật chính xác
 try {
   db.prepare("UPDATE users SET full_name = 'Cô Hoàng Hương (GV Chủ nhiệm 3A2)', class_name = '3A2' WHERE username = 'giaovien01'").run();
+} catch (e) {}
+try {
+  db.prepare("UPDATE users SET full_name = 'Học sinh Lớp 3A2', class_name = '3A2' WHERE username = 'hocsinh01' AND (full_name = 'Bảo Nam' OR full_name = 'Nguyễn Bảo Nam')").run();
 } catch (e) {}
 
 module.exports = db;
